@@ -6,13 +6,14 @@ plugins {
 
 group = "me.knoll_000"
 version = "1.0-SNAPSHOT"
-
+val coroutinesVersion = "1.3.2"
 repositories {
     mavenCentral()
 }
 
 dependencies {
     testImplementation(kotlin("test-junit"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 }
 
 tasks.test {
