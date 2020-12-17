@@ -5,9 +5,9 @@ import days.day13.Day13
 import days.day14.Day14
 import days.day15.Day15
 import days.day16.Day16
+import days.day17.Day17
 
 fun main() {
-    println("Hello world!")
-    Day16().run()
+    Day17().run()
 }
 
