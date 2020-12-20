@@ -2,11 +2,10 @@ package days.day10
 
 import days.Day
 import helpers.pairWith
-import kotlin.math.abs
-import kotlin.math.min
+import kotlin.math.*
 
 class Day10: Day("day10_input.txt") {
-    private val conditionedInput = ArrayList(testLines.map { JoltAdapter(it.toInt()) }).also {
+    private val conditionedInput = ArrayList(inputLines.map { JoltAdapter(it.toInt()) }).also {
         it.add(JoltAdapter(0))
         it.add(JoltAdapter(it.maxOf { it.outputRating } + 3))
     }.sortedBy { it.outputRating }
@@ -38,22 +37,43 @@ class Day10: Day("day10_input.txt") {
         println(discardable.size)
         println(discardable.map { it.outputRating })
 
-        val binomialSum = discardable.mapIndexed { index, _ ->  binomial(discardable.size, index) }.sum()
-        println("binomial sum + 1 = $binomialSum")
-
-        var triosBinomialSum = 0L
-        val discardablePairsAndTriosCount = countNonDiscardablePairsAndTrios(adapters, discardable)
-        for (i in 0..discardable.size - 3) {
-            triosBinomialSum += binomial(discardable.size - 3, i)
+        //val binomialSum = discardable.mapIndexed { index, _ ->  binomial(discardable.size, index) }.sum() + 1
+        var binomialSum = 0L
+        for (i in 0 .. discardable.size) {
+            binomialSum += binomial(discardable.size, i)
         }
-        println("triosBinomialSum = $triosBinomialSum")
-        println("There were this many of those that produced invalid ones:  ${discardablePairsAndTriosCount.second * triosBinomialSum}")
-        println("diff = ${binomialSum - discardablePairsAndTriosCount.second * triosBinomialSum}")
-        println("but this counts a lot of duplicates")
+        println("binomial sum = $binomialSum")
 
+        val discardablePairsAndTriosCount = countNonDiscardablePairsAndTrios(adapters, discardable)
 
-
-
+        // println("diff = ${binomialSum - discardablePairsAndTriosCount.second * triosBinomialSum}")
+        // println("but this counts a lot of duplicates")
+        val nonDiscardableTrios = discardablePairsAndTriosCount.second
+        println("There are $nonDiscardableTrios non-discardable trios")
+        val D = discardable.size
+        val G = nonDiscardableTrios
+        var invalidSets = 0L
+        for (k in 0 until G) {
+            var coeff = 0L
+            for (n in 0 .. k) {
+                for (m in 0 .. k) {
+                    if (n + m <= k) {
+                        val singleCoeff = binomial(k, n+m) * binomial(n+m, m) *
+                                binomial(3, 0).pow(k-n-m) * binomial(3,1).pow(m) * binomial(3,2).pow(n)
+                        println(singleCoeff)
+                        coeff += singleCoeff
+                    }
+                }
+            }
+            println()
+            var unscaledSum = 0L
+            for (l in 0 .. (D - 3*(k+1))) {
+                unscaledSum += binomial(D - 3*(k+1), l)
+            }
+            invalidSets += coeff * unscaledSum
+        }
+        println("Found $invalidSets invalid Sets")
+        println("Total = ${binomialSum - invalidSets}")
     }
 
     private fun removeLockedRows(adapters: List<JoltAdapter>): List<JoltAdapter> {
@@ -121,5 +141,12 @@ class Day10: Day("day10_input.txt") {
                 result = result * numerator-- / denominator++
             result
         }
+    }
+
+    private fun Int.pow(exp: Int): Long {
+        return this.toDouble().pow(exp).roundToLong()
+    }
+    private fun Long.pow(exp: Int): Long {
+        return this.toDouble().pow(exp).roundToLong()
     }
 }
