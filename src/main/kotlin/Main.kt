@@ -1,7 +1,7 @@
 import days.day18.Day18
+import days.day19.Day19
 
 fun main() {
-    //Day18().run()
-    testcode.typeSafeBuilder()
+    Day19().run()
 }
 

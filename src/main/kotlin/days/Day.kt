@@ -1,9 +1,10 @@
 package days
 
 import InputReader
+import kotlin.system.measureTimeMillis
 
 abstract class Day(filename: String) {
-    val inputReader = InputReader(filename)
+    private val inputReader = InputReader(filename)
     val inputLines = inputReader.fileContents
     val testLines = InputReader("test.txt").fileContents
     val testString = InputReader("test.txt").fileAsString
@@ -13,7 +14,11 @@ abstract class Day(filename: String) {
     abstract fun part2(): Any
 
     fun run() {
-        part1()
-        part2()
+        measureTimeMillis {
+            part1()
+        }.also { println("Part 1 completed in $it ms\r\n\r\n") }
+        measureTimeMillis {
+            part2()
+        }.also { println("Part 2 completed in $it ms\r\n\r\n") }
     }
 }
