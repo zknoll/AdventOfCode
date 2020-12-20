@@ -32,12 +32,32 @@ class Day10: Day("day10_input.txt") {
         println("DiffOne = $diffOne, diffThree = $diffThree, product = ${diffOne * diffThree}")
     }
 
+    private fun findDifferentConfigurationsWithMap(adapters: List<JoltAdapter>) {
+        val discardable = removeLockedRows(adapters)
+        val binomialSum = (0..discardable.size).map { k -> binomial(discardable.size, k) }.sum()
+        val discardablePairsAndTriosCount = countNonDiscardablePairsAndTrios(adapters, discardable)
+        val nonDiscardableTrios = discardablePairsAndTriosCount.second
+
+        val D = discardable.size
+        val G = nonDiscardableTrios
+        IntRange
+        val invalidSets = (0 until G).map { k ->
+            (0..k).map { n ->
+                (0..k).map { m ->
+                    if (n + m <= k) binomial(k, n+m) * binomial(n+m, m) *
+                            binomial(3, 0).pow(k-n-m) * binomial(3,1).pow(m) * binomial(3,2).pow(n) else 0
+                }
+            }.flatten().sum() * (0..(D-3*(k+1))).map { l -> binomial(D - 3*(k+1), l) }.sum()
+        }.sum()
+
+        println("Found $invalidSets invalid Sets")
+        println("Total = ${binomialSum - invalidSets}")
+    }
+
     private fun findDifferentConfigurations(adapters: List<JoltAdapter>) {
         val discardable = removeLockedRows(adapters)
-        println(discardable.size)
-        println(discardable.map { it.outputRating })
+        println("Found ${discardable.size} discardable adapters")
 
-        //val binomialSum = discardable.mapIndexed { index, _ ->  binomial(discardable.size, index) }.sum() + 1
         var binomialSum = 0L
         for (i in 0 .. discardable.size) {
             binomialSum += binomial(discardable.size, i)
@@ -45,9 +65,6 @@ class Day10: Day("day10_input.txt") {
         println("binomial sum = $binomialSum")
 
         val discardablePairsAndTriosCount = countNonDiscardablePairsAndTrios(adapters, discardable)
-
-        // println("diff = ${binomialSum - discardablePairsAndTriosCount.second * triosBinomialSum}")
-        // println("but this counts a lot of duplicates")
         val nonDiscardableTrios = discardablePairsAndTriosCount.second
         println("There are $nonDiscardableTrios non-discardable trios")
         val D = discardable.size
@@ -58,14 +75,11 @@ class Day10: Day("day10_input.txt") {
             for (n in 0 .. k) {
                 for (m in 0 .. k) {
                     if (n + m <= k) {
-                        val singleCoeff = binomial(k, n+m) * binomial(n+m, m) *
+                        coeff += binomial(k, n+m) * binomial(n+m, m) *
                                 binomial(3, 0).pow(k-n-m) * binomial(3,1).pow(m) * binomial(3,2).pow(n)
-                        println(singleCoeff)
-                        coeff += singleCoeff
                     }
                 }
             }
-            println()
             var unscaledSum = 0L
             for (l in 0 .. (D - 3*(k+1))) {
                 unscaledSum += binomial(D - 3*(k+1), l)
@@ -82,7 +96,6 @@ class Day10: Day("day10_input.txt") {
             if (i == 0 || i == adapters.size - 1) {
                 continue
             }
-            //println("i = ${adapters[i].outputRating}, i-1 = ${adapters[i-1].outputRating}, i+1 = ${adapters[i+1].outputRating}")
             if (adapters[i].outputRating - adapters[i-1].outputRating >= 3) {
                 continue
             }
@@ -129,7 +142,7 @@ class Day10: Day("day10_input.txt") {
         fun supportsInput(input: Int) = input in inputRatingMin..inputRatingMax
     }
 
-    fun binomial(n: Int, k: Int) = when {
+    private fun binomial(n: Int, k: Int) = when {
         n < 0 || k < 0 -> throw IllegalArgumentException("negative numbers not allowed")
         n == k         -> 1L
         else           -> {
@@ -143,9 +156,6 @@ class Day10: Day("day10_input.txt") {
         }
     }
 
-    private fun Int.pow(exp: Int): Long {
-        return this.toDouble().pow(exp).roundToLong()
-    }
     private fun Long.pow(exp: Int): Long {
         return this.toDouble().pow(exp).roundToLong()
     }
