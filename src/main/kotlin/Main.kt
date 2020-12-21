@@ -1,6 +1,7 @@
 import days.day10.Day10
+import days.day20.Day20
 
 fun main() {
-    Day10().run()
+    Day20().run()
 }
 
