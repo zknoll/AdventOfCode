@@ -8,7 +8,7 @@ class Day20: Day("day20_input.txt") {
         private val tileRegex = "Tile (\\d+):\\r\\n((?:[.#]+\\r\\n)+)".toRegex()
     }
 
-    val input = testString
+    val input = inputString
 
     val seaMonster: List<List<Int>> = listOf(
         "                  # ",
@@ -29,7 +29,23 @@ class Day20: Day("day20_input.txt") {
     override fun part2() {
         val tiles = conditionInput(input)
         val puzzle = Puzzle(tiles)
-        convolveIndexTopLeft(puzzle.image.flip().rotate90(), seaMonster).forEach { println(it) }
+        val images = arrayListOf(
+            puzzle.image,
+            puzzle.image.rotate90(),
+            puzzle.image.rotate90().rotate90(),
+            puzzle.image.rotate90().rotate90().rotate90(),
+            puzzle.image.flip(),
+            puzzle.image.flip().rotate90(),
+            puzzle.image.flip().rotate90().rotate90(),
+            puzzle.image.flip().rotate90().rotate90().rotate90()
+        )
+        val seamonsters = images.map { image ->
+            convolveIndexTopLeft(image, seaMonster).flatten().count { it == confirmationNumber }.also { println(it) }
+        }.sum()
+        println(puzzle.image.flatten().sum())
+        println("Total #'s = ${puzzle.image.flatten().sum()}, choppy seas number = ${puzzle.image.flatten().sum() - (15 * seamonsters)}")
+        // convolveIndexTopLeft(puzzle.image, seaMonster).flatten().count { it == confirmationNumber }.also { println(it) }
+        // convolveIndexTopLeft(puzzle.image.flip().rotate90(), seaMonster).flatten().count { it == confirmationNumber }.also { println(it) }
 
     }
 
@@ -258,11 +274,12 @@ class Day20: Day("day20_input.txt") {
         for (i in 0 until image.size - kernel.size) {
             output.add(arrayListOf())
             for (j in 0 until image[0].size - kernel[0].size) {
-                val subImage = image.subList(i, kernel.size).map { it.subList(j, kernel[0].size) }
+                val subImage = image.subList(i, i+kernel.size).map { it.subList(j, j+kernel[0].size) }
                 var sum = 0
                 for (k in kernel.indices) {
                     for (m in kernel[0].indices) {
-                        sum += subImage[k][m].and(kernel[k][m])
+                        sum += subImage[k][m]
+                            .and(kernel[k][m])
                     }
                 }
                 output[i].add(sum)
