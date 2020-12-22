@@ -1,9 +1,6 @@
 package days.day20
 
 import days.Day
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 
 class Day20: Day("day20_input.txt") {
 
@@ -29,7 +26,12 @@ class Day20: Day("day20_input.txt") {
         println(cornerTiles.map { it.key.id.toLong() }.reduce{ acc, l -> acc * l })
     }
 
-    override fun part2() = 0
+    override fun part2() {
+        val tiles = conditionInput(input)
+        val puzzle = Puzzle(tiles)
+        convolveIndexTopLeft(puzzle.image.flip().rotate90(), seaMonster).forEach { println(it) }
+
+    }
 
     private fun conditionInput(input: String): List<Tile> {
         return tileRegex.findAll(input).map { result ->
@@ -177,7 +179,13 @@ class Day20: Day("day20_input.txt") {
                     }
                 }
             }
-            image = puzzleStart
+            puzzleStart.forEach { println(it) }
+            val borderRowsRemoved = puzzleStart.filterIndexed { i, _ -> i%10 != 0 && i%10 != 9 }
+            val borderRowsAndColsRemoved = borderRowsRemoved.map { r -> r.filterIndexed { i, _ -> i%10 != 0 && i%10 != 9 } }
+
+            image = borderRowsAndColsRemoved
+            image.forEach { println(it) }
+            println("Total image size = ${image.size} x ${image[0].size} (also last row = ${image.last().size})")
         }
     }
 
@@ -235,17 +243,31 @@ class Day20: Day("day20_input.txt") {
             isFlipped = !isFlipped
         }
 
-        fun List<List<Int>>.rotate90() = mapIndexed { i, row -> row.mapIndexed { j, value -> this[j][size - i - 1] } }
+        fun List<List<Int>>.rotate90() = mapIndexed { i, row -> row.mapIndexed { j, _ -> this[j][size - i - 1] } }
     }
 
-    fun List<List<Int>>.rotate90() = mapIndexed { i, row -> row.mapIndexed { j, value -> this[j][size - i - 1] } }
+    fun List<List<Int>>.rotate90() = mapIndexed { i, row -> row.mapIndexed { j, _ -> this[j][size - i - 1] } }
     fun List<List<Int>>.flip() = map { it.reversed() }
 
-    fun convolveIndexTopLeft(image: List<List<Int>>, kernel: List<List<Int>>) {
+    fun convolveIndexTopLeft(image: List<List<Int>>, kernel: List<List<Int>>): List<List<Int>> {
         if (image.size < kernel.size || image[0].size < kernel[0].size) {
             throw Exception()
         }
 
-        //
+        val output = ArrayList<ArrayList<Int>>()
+        for (i in 0 until image.size - kernel.size) {
+            output.add(arrayListOf())
+            for (j in 0 until image[0].size - kernel[0].size) {
+                val subImage = image.subList(i, kernel.size).map { it.subList(j, kernel[0].size) }
+                var sum = 0
+                for (k in kernel.indices) {
+                    for (m in kernel[0].indices) {
+                        sum += subImage[k][m].and(kernel[k][m])
+                    }
+                }
+                output[i].add(sum)
+            }
+        }
+        return output
     }
 }
