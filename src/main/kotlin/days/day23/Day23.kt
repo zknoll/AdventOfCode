@@ -6,6 +6,7 @@ import helpers.toArrayList
 import helpers.toLinkedList
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.system.measureTimeMillis
 
 typealias CupSequence = LinkedList<Int>
 
@@ -45,19 +46,22 @@ class Day23: Day("day23_input.txt") {
             var currentValue: Int? = null
             var moveCounter = 1
             repeat(iterations) {
-                currentValueIndex = inputCopy.indexOfNextValue(currentValue)
-                currentValue = inputCopy[currentValueIndex!!]
-                println("-- move $moveCounter --")
-                inputCopy = doMove(currentValueIndex!!, currentValue!!, inputCopy)
-                moveCounter++
-                println()
+                val time = measureTimeMillis {
+                    currentValueIndex = inputCopy.indexOfNextValue(currentValue)
+                    currentValue = inputCopy[currentValueIndex!!]
+                    if (moveCounter % 100 == 0) println("-- move $moveCounter --")
+                    inputCopy = doMove(currentValueIndex!!, currentValue!!, inputCopy)
+                    moveCounter++
+                    //println()
+                }
+                if (moveCounter % 100 == 0) println(" move took $time ms")
             }
             return inputCopy
         }
 
         fun doMove(currentIndex: Int, currentValue: Int, gameState: CupSequence): CupSequence {
-            debug("cups: $gameState")
-            debug("value: ${gameState[currentIndex]}")
+            //debug("cups: $gameState")
+            //debug("value: ${gameState[currentIndex]}")
             //val removedValues = gameState.removeAfterValue(currentValue)
             val removedValues: ArrayList<Int> = arrayListOf()
             var tempIndex = currentIndex
