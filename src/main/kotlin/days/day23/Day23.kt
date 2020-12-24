@@ -13,12 +13,6 @@ typealias CupSequence = LinkedList<Int>
 class Day23: Day("day23_input.txt") {
 
     val input = "523764819".map { it.toInt() - 48 }.toLinkedList()
-
-    val input2 = "523764819".map { it.toInt() - 48 }.toLinkedList().also {
-        for (i in 10..1000000) {
-            it.add(i)
-        }
-    }
     val testInput = "389125467".map { it.toInt() - 48 }.toLinkedList()
 
     override fun part1() {
@@ -26,15 +20,40 @@ class Day23: Day("day23_input.txt") {
     }
 
     override fun part2(){
-        val result = CrabGame(input2).playGame(1000000)
-        val after1 = result[result.indexOfFirst { it == 1 } + 1]
-        val after2 = result[result.indexOfFirst { it == 1 } + 2]
-        println(after1.toLong() * after2.toLong())
+        val result = CrabGame2(input, 1000000).playGame(10000000)
+        val after1 = result.getEntryByValue(1).next!!
+        val after2 = after1.next!!
+        //println(result)
+        println(after1.value.toLong() * after2.value.toLong())
+    }
+
+    private class CrabGame2(input: List<Int>, gameSize: Int) {
+        val gameState = CupSequenceTemp(input, gameSize)
+        private val minValue = input.minOrNull()!!
+        private val maxValue = gameSize
+
+        fun playGame(iterations: Int): CupSequenceTemp {
+            //println(gameState)
+            var currentEntry: CupSequenceTemp.CupSequenceEntry? = null
+            repeat(iterations) {
+                currentEntry = if (currentEntry == null) gameState.first else currentEntry!!.next!!
+                val nextThree = gameState.getNextThree(currentEntry!!).map { it.value }
+                var targetValue = if (currentEntry!!.value == minValue) maxValue else currentEntry!!.value - 1
+                while (targetValue in nextThree) {
+                    targetValue--
+                    if (targetValue < minValue) {
+                        targetValue = maxValue
+                    }
+                }
+                gameState.removeThreeAfterAndInsert(currentEntry!!, gameState.getEntryByValue(targetValue))
+            }
+            return gameState
+        }
     }
 
     private class CrabGame(val input: CupSequence) {
-        private val minValue = input.minOrNull()!!.also { println(it) }
-        private val maxValue = input.maxOrNull()!!.also { println(it) }
+        private val minValue = input.minOrNull()!!
+        private val maxValue = input.maxOrNull()!!
 
         val debugFlag = false
 
@@ -49,12 +68,12 @@ class Day23: Day("day23_input.txt") {
                 val time = measureTimeMillis {
                     currentValueIndex = inputCopy.indexOfNextValue(currentValue)
                     currentValue = inputCopy[currentValueIndex!!]
-                    if (moveCounter % 100 == 0) println("-- move $moveCounter --")
-                    inputCopy = doMove(currentValueIndex!!, currentValue!!, inputCopy)
+                    if (moveCounter % 1000 == 0) println("-- move $moveCounter --")
+                    doMove(currentValueIndex!!, currentValue!!, inputCopy)
                     moveCounter++
                     //println()
                 }
-                if (moveCounter % 100 == 0) println(" move took $time ms")
+                if (moveCounter % 1000 == 0) println(" move took $time ms")
             }
             return inputCopy
         }
@@ -72,7 +91,7 @@ class Day23: Day("day23_input.txt") {
                     tempIndex--
                 }
             }
-            debug("pick up: $removedValues")
+            //debug("pick up: $removedValues")
             var targetValue = if (currentValue == minValue) maxValue else currentValue - 1
             while (targetValue in removedValues) {
                 targetValue--
@@ -80,7 +99,7 @@ class Day23: Day("day23_input.txt") {
                     targetValue = maxValue
                 }
             }
-            debug("destination: $targetValue")
+            //debug("destination: $targetValue")
             gameState.insertAfterValue(targetValue, removedValues)
             return gameState
         }
